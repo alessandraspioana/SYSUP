@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PaletBot by Tech-Con</title>
+<meta name="theme-color" content="#4B2D8A">
+<link rel="manifest" href='data:application/manifest+json,%7B%22name%22%3A%22PaletBot%20by%20Tech-Con%22%2C%22short_name%22%3A%22PaletBot%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22theme_color%22%3A%22%234B2D8A%22%2C%22background_color%22%3A%22%23111827%22%7D'>
+<style>
+  :root{--bg:#111827;--card:#4B2D8A;--card2:#1f2937;--cta:#F5A623;--ok:#22C55E;--warn:#EAB308;--err:#EF4444;--txt:#F9FAFB;--mut:#C4B5FD}
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:hidden;-webkit-text-size-adjust:100%}
+  body{min-height:100vh;min-height:100dvh}
+  button,input,select{font:inherit;color:inherit}
+  .wrap{width:100%;max-width:640px;margin:0 auto;padding:0 16px}
+  header{background:#0b1220;border-bottom:2px solid var(--card);position:sticky;top:0;z-index:10}
+  .hrow{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:10px 0 8px}
+  .logo{display:flex;align-items:center;gap:8px;min-width:0}
+  .logo-mark{width:32px;height:32px;border-radius:8px;background:var(--card);display:grid;place-items:center;flex:none;border:1px solid var(--cta)}
+  .logo b{font-size:16px;letter-spacing:.2px;white-space:nowrap}
+  .logo b span{color:var(--cta)}
+  .logo small{display:block;font-size:10px;color:var(--mut);line-height:1}
+  .demos{display:flex;gap:6px;flex-wrap:wrap}
+  .dbtn{background:transparent;border:1px solid #4b5563;color:#d1d5db;border-radius:999px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap}
+  .dbtn:hover{border-color:var(--cta);color:var(--cta)}
+  .progress{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding-bottom:10px}
+  .pseg{display:flex;flex-direction:column;gap:3px;align-items:center;min-width:0}
+  .pbar{height:5px;width:100%;border-radius:3px;background:#374151;transition:background .3s}
+  .pseg.done .pbar{background:var(--card);filter:brightness(1.6)}
+  .pseg.cur .pbar{background:var(--cta)}
+  .plab{font-size:9px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .pseg.cur .plab{color:var(--cta);font-weight:600}
+  main{padding:32px 0 40px}
+  .sbadge{display:inline-block;margin-top:4px;padding:4px 10px;border-radius:999px;font-weight:700;font-size:13px}
+  .step{display:none;opacity:0;transform:translateY(6px);transition:opacity .35s ease,transform .35s ease}
+  .step.active{display:block}
+  .step.show{opacity:1;transform:none}
+  h1{font-size:24px;line-height:1.25;margin:8px 0 12px}
+  h2{font-size:20px;line-height:1.3;margin:0 0 14px}
+  p{line-height:1.55;margin:0 0 12px}
+  .sub{color:var(--mut)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;padding:13px 20px;font-weight:700;cursor:pointer;transition:transform .15s,filter .15s,background .15s}
+  .btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .btn:active{transform:none}
+  .btn-cta{background:var(--cta);color:#111827}
+  .btn-big{width:100%;padding:16px 20px;font-size:17px}
+  .btn-ghost{background:transparent;border:1px solid #4b5563;color:#e5e7eb}
+  .btn-sec{background:var(--card);color:#fff;border:1px solid #6d4db5}
+  .nav{display:flex;gap:10px;margin-top:22px}
+  .nav .btn{flex:1}
+  .nav .btn-ghost{flex:0 0 auto}
+  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .pk{background:var(--card2);border:2px solid #374151;border-radius:14px;padding:14px 10px;min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;cursor:pointer;transition:transform .2s,border-color .2s,background .2s,box-shadow .2s;overflow-wrap:anywhere;min-width:0}
+  .pk:hover{transform:translateY(-3px);border-color:var(--cta);box-shadow:0 6px 18px rgba(245,166,35,.15)}
+  .pk.sel{background:var(--card);border-color:var(--cta);box-shadow:0 0 0 2px rgba(245,166,35,.35)}
+  .pk .ic{font-size:26px}
+  .pk .t{font-weight:600;font-size:14px;line-height:1.25}
+  .err{color:var(--err);font-size:13px;margin-top:6px;display:none}
+  .err.on{display:block}
+  .field{margin-bottom:14px}
+  label{display:block;font-size:13px;color:var(--mut);margin-bottom:5px}
+  .inp{width:100%;background:var(--card2);border:2px solid #374151;border-radius:10px;padding:11px 12px;outline:none;transition:border-color .2s}
+  .inp:focus{border-color:var(--cta)}
+  .inp.bad,.pk-wrap.bad .pk{border-color:var(--err)}
+  select.inp{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#9ca3af 50%),linear-gradient(135deg,#9ca3af 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
+  .tog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .tg{background:var(--card2);border:2px solid #374151;border-radius:10px;padding:12px 4px;font-weight:600;font-size:14px;cursor:pointer;transition:all .2s}
+  .tg:hover{border-color:var(--cta)}
+  .tg.sel{background:var(--card);border-color:var(--cta)}
+  .tg.bad{border-color:var(--err)}
+  .vol{background:var(--card2);border:2px solid #374151;border-radius:14px;padding:18px 16px}
+  .vol.bad{border-color:var(--err)}
+  .volout{font-size:18px;font-weight:700;text-align:center;margin-bottom:14px}
+  .volout span{color:var(--cta)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;background:#374151;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--cta);border:3px solid #111827;cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--cta);border:3px solid #111827;cursor:pointer}
+  .numrow{margin-top:16px}
+  .numrow label{margin-bottom:6px}
+  .note{background:var(--card2);border:1px dashed #6d4db5;border-radius:12px;padding:12px 14px;margin:12px 0;font-size:13px;line-height:1.5;color:#d1d5db}
+  .note b{color:var(--cta)}
+  .scale{display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;margin-top:6px}
+  .badge{border-radius:14px;padding:16px;font-weight:800;font-size:18px;display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  .b-ok{background:rgba(34,197,94,.15);border:2px solid var(--ok);color:var(--ok)}
+  .b-warn{background:rgba(234,179,8,.15);border:2px solid var(--warn);color:var(--warn)}
+  .b-cta{background:rgba(245,166,35,.15);border:2px solid var(--cta);color:var(--cta)}
+  .box{background:var(--card2);border:1px solid #374151;border-left:4px solid var(--card);border-radius:12px;padding:14px 16px;margin:16px 0}
+  .box h3{margin:0 0 10px;font-size:15px}
+  .box ul{list-style:none;margin:0;padding:0}
+  .box li{padding:5px 0 5px 26px;position:relative;font-size:14px;line-height:1.45}
+  .box li::before{position:absolute;left:0;font-weight:800}
+  .box li.y::before{content:"✓";color:var(--ok)}
+  .box li.n::before{content:"✗";color:var(--err)}
+  .box li.o::before{content:"○";color:var(--warn)}
+  .disc{font-style:italic;font-size:12px;color:#9ca3af;line-height:1.5;margin:14px 0 18px}
+  .banner{background:rgba(234,179,8,.15);border:1px solid var(--warn);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px}
+  .okt{color:var(--ok)}
+  .sum{background:var(--card2);border:1px solid var(--card);border-radius:12px;padding:14px 16px;margin:16px 0}
+  .sum div{padding:6px 0;border-bottom:1px solid #374151;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+  .sum div:last-child{border-bottom:0}
+  .sum b{color:var(--mut);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+  .stack{display:flex;flex-direction:column;gap:10px}
+  .small-link{background:none;border:0;color:var(--mut);text-decoration:underline;font-size:12px;cursor:pointer;padding:4px 0;margin-bottom:12px}
+  @media(min-width:640px){h1{font-size:30px}}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="hrow">
+      <div class="logo">
+        <div class="logo-mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="5" rx="1"/><rect x="6" y="8" width="12" height="4" rx="1"/><path d="M12 2v4M9 4h6"/></svg>
+        </div>
+        <div><b>Palet<span>Bot</span></b><small>by Tech-Con</small></div>
+      </div>
+      <div class="demos">
+        <button type="button" class="dbtn" id="demoOk">▶ Demo Compatibil</button>
+        <button type="button" class="dbtn" id="demoErr">⚠ Demo Eroare</button>
+      </div>
+    </div>
+    <div class="progress" id="progress" aria-label="Progres"></div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- PAS 0 -->
+  <section class="step" data-step="0">
+    <h1>Verifică în 60 de secunde dacă linia ta e compatibilă cu o celulă robotică UR20</h1>
+    <p class="sub">Bazat pe implementarea Tech-Con la PURATOS — găleți 5 kg și 13 kg, 7,4–8,6 găleți/min în teste FAT.</p>
+    <div style="margin-top:24px"><button type="button" class="btn btn-cta btn-big" id="start">Începe evaluarea →</button></div>
+  </section>
+
+  <!-- PAS 1 -->
+  <section class="step" data-step="1">
+    <h2>Ce tip de ambalaj paletizați?</h2>
+    <div class="pk-wrap" id="pkWrap">
+      <div class="cards" id="cards">
+        <button type="button" class="pk" data-v="small"><span class="ic">🪣</span><span class="t">Găleți plastic 1–5 kg</span></button>
+        <button type="button" class="pk" data-v="mid"><span class="ic">🪣</span><span class="t">Găleți plastic &gt;5–13 kg</span></button>
+        <button type="button" class="pk" data-v="large"><span class="ic">🛢️</span><span class="t">Găleți &gt;13 kg</span></button>
+        <button type="button" class="pk" data-v="other"><span class="ic">📦</span><span class="t">Cutii sau alte ambalaje</span></button>
+      </div>
+    </div>
+    <div class="err" id="errPack">Selectați un tip de ambalaj pentru a continua.</div>
+    <div class="nav"><button type="button" class="btn btn-ghost" data-back>← Înapoi</button><button type="button" class="btn btn-cta" data-next>Continuă →</button></div>
+  </section>
+
+  <!-- PAS 2 -->
+  <section class="step" data-step="2">
+    <h2>Câte unități pe oră produce linia?</h2>
+    <div class="vol" id="volBox">
+      <div class="volout"><span id="volOut">0 unități/oră = 0,0 unități/min</span></div>
+      <input type="range" id="vol" min="0" max="1000" step="10" value="0" aria-label="Unități pe oră">
+      <div class="scale"><span>0</span><span>250</span><span>500</span><span>750</span><span>1000</span></div>
+      <div class="numrow"><label for="volNum">Valoare exactă (unități/oră)</label><input class="inp" id="volNum" type="number" min="0" max="1000" step="1" value="0" inputmode="numeric"></div>
+    </div>
+    <div class="err" id="errVol">Introduceți un volum mai mare de 0 pentru a continua.</div>
+    <div class="nav"><button type="button" class="btn btn-ghost" data-back>← Înapoi</button><button type="button" class="btn btn-cta" data-next>Continuă →</button></div>
+  </section>
+
+  <!-- PAS 3 -->
+  <section class="step" data-step="3">
+    <h2>Câte schimburi pe zi și în ce zonă este fabrica?</h2>
+    <div class="field">
+      <label>Număr de schimburi</label>
+      <div class="tog" id="tog">
+        <button type="button" class="tg" data-v="1">1 schimb</button>
+        <button type="button" class="tg" data-v="2">2 schimburi</button>
+        <button type="button" class="tg" data-v="3">3 schimburi</button>
+      </div>
+      <div class="err" id="errShift">Selectați numărul de schimburi.</div>
+    </div>
+    <div class="field">
+      <label for="region">Zona fabricii</label>
+      <select id="region" class="inp">
+        <option value="">— Alegeți regiunea —</option>
+        <option value="south">Sud-Muntenia / București → hub Dragomirești-Deal</option>
+        <option value="east">Moldova / Est → hub Iași</option>
+        <option value="west">Vest / Transilvania → hub Timișoara</option>
+      </select>
+      <div class="err" id="errRegion">Selectați zona în care se află fabrica.</div>
+    </div>
+    <div class="nav"><button type="button" class="btn btn-ghost" data-back>← Înapoi</button><button type="button" class="btn btn-cta" data-next>Vezi rezultatul →</button></div>
+  </section>
+
+  <!-- PAS 4 -->
+  <section class="step" data-step="4">
+    <h2>Rezultatul evaluării</h2>
+    <div id="badge" class="badge"></div>
+    <p id="resText"></p>
+    <p id="shiftText" class="sub"></p>
+    <div id="palBlock" class="note" style="display:none"></div>
+    <div class="box">
+      <h3>Ce include și ce NU include celula de bază</h3>
+      <ul>
+        <li class="y"><b>Inclus:</b> preluare de pe transportor, verificare mâner (vision 2D), așezare pe 2 poziții de paletizare, scanere de siguranță.</li>
+        <li class="n"><b>Rămâne manual:</b> schimbarea paleților și amplasarea separatoarelor.</li>
+        <li class="o"><b>În afara celulei de bază:</b> înfolierea și transportul paleților către logistică.</li>
+      </ul>
+    </div>
+    <p class="disc">Rezultatele PURATOS sunt repere de test, nu o garanție universală pentru orice fabrică sau produs. Un robot mai rapid nu crește automat debitul întregii fabrici fără verificarea blocajelor.</p>
+    <button type="button" class="btn btn-cta btn-big" data-next>Solicită evaluare tehnică →</button>
+    <div class="nav"><button type="button" class="btn btn-ghost" data-back style="flex:1">← Înapoi</button></div>
+  </section>
+
+  <!-- PAS 5 -->
+  <section class="step" data-step="5">
+    <div class="banner">⚠ Prototip demonstrativ — nu introduceți date personale reale; folosiți doar date fictive.</div>
+    <h2>Solicită evaluare tehnică</h2>
+    <button type="button" class="small-link" id="fill">Completează date fictive</button>
+    <form id="form" novalidate>
+      <div class="field"><label for="fName">Nume (fictiv)</label><input class="inp" id="fName" type="text" autocomplete="off"><div class="err" id="eName">Introduceți un nume (fictiv).</div></div>
+      <div class="field"><label for="fRole">Rol</label>
+        <select class="inp" id="fRole"><option value="">— Alegeți rolul —</option><option>Director Producție</option><option>Responsabil Investiții</option><option>Altul</option></select>
+        <div class="err" id="eRole">Selectați un rol.</div></div>
+      <div class="field"><label for="fCompany">Companie (fictivă)</label><input class="inp" id="fCompany" type="text" autocomplete="off"><div class="err" id="eCompany">Introduceți numele companiei (fictive).</div></div>
+      <div class="field"><label for="fEmail">Email demo</label><input class="inp" id="fEmail" type="email" autocomplete="off" inputmode="email"><div class="err" id="eEmail">Introduceți o adresă de email validă (ex. nume@domeniu.ro).</div></div>
+      <div class="field"><label for="fCity">Oraș</label><input class="inp" id="fCity" type="text" autocomplete="off"><div class="err" id="eCity">Introduceți orașul.</div></div>
+      <div class="nav"><button type="button" class="btn btn-ghost" data-back>← Înapoi</button><button type="submit" class="btn btn-cta">Trimite solicitarea</button></div>
+    </form>
+  </section>
+
+  <!-- PAS 6 -->
+  <section class="step" data-step="6">
+    <h2 class="okt">✓ Cerere demo înregistrată</h2>
+    <p id="hubText"></p>
+    <div class="sum" id="sum"></div>
+    <div class="stack">
+      <button type="button" class="btn btn-sec btn-big" id="copy">📋 Copiază rezumatul</button>
+      <button type="button" class="btn btn-ghost btn-big" id="reset">↩ Reia evaluarea</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  'use strict';
+  var STEP_LABELS=['Ambalaj','Volum','Schimburi','Rezultat','Formular','Confirmare'];
+  var PACK={small:'Găleți plastic 1–5 kg',mid:'Găleți plastic >5–13 kg',large:'Găleți >13 kg',other:'Cutii sau alte ambalaje'};
+  var REGION={south:{label:'Sud-Muntenia / București',hub:'Dragomirești-Deal'},east:{label:'Moldova / Est',hub:'Iași'},west:{label:'Vest / Transilvania',hub:'Timișoara'}};
+  var RESULT={
+    ok:{cls:'b-ok',icon:'✓',title:'Profil compatibil pentru 1 celulă UR20',
+      text:'Linia dvs. se încadrează în reperele testate de Tech-Con la PURATOS (țintă: 6 găleți/min; testat: 7,4 găleți/min la 13 kg și 8,6 găleți/min la 5 kg, cu vedere 2D pentru orientarea mânerului și 2 poziții de paletizare).',
+      short:'Profil compatibil pentru 1 celulă UR20'},
+    high:{cls:'b-warn',icon:'⚠',title:'Volum ridicat — Recomandare: 2 celule UR20',
+      text:'Ritmul depășește capacitatea testată a unei singure celule UR20 pentru acest format (444/h la 13 kg, 516/h la 5 kg). Recomandăm evaluarea unei configurații cu 2 celule (similar cu PURATOS) și verificarea blocajelor din amonte/aval.',
+      short:'Volum ridicat — Recomandare: 2 celule UR20'},
+    low:{cls:'b-cta',icon:'🔧',title:'Volum redus — Necesită analiză de oportunitate',
+      text:'Debitul introdus este sub 4 găleți/min (sub 240 unități/oră), adică sub ținta de referință de 6 găleți/min din studiul PURATOS. Este necesară verificarea oportunității investiției împreună cu echipa Tech-Con.',
+      short:'Volum redus — Necesită analiză de oportunitate'},
+    custom:{cls:'b-cta',icon:'🔧',title:'Necesită evaluare tehnică personalizată',
+      text:'Parametrii (greutatea totală cu gripperul în raport cu limita UR20, tipul ambalajului sau debitul) necesită verificarea inginerilor Tech-Con înainte de ofertare.',
+      short:'Necesită evaluare tehnică personalizată'}
+  };
+  var state;
+  function fresh(){return {step:0,pack:null,volume:0,shifts:null,region:'',form:{name:'',role:'',company:'',email:'',city:''}};}
+  state=fresh();
+
+  var $=function(id){return document.getElementById(id)};
+  var steps=[].slice.call(document.querySelectorAll('.step'));
+  var timer=null;
+
+  // progress
+  var prog=$('progress');
+  STEP_LABELS.forEach(function(l,i){
+    var d=document.createElement('div');d.className='pseg';d.dataset.i=i+1;
+    d.innerHTML='<div class="pbar"></div><div class="plab">'+(i+1)+'. '+l+'</div>';prog.appendChild(d);
+  });
+
+  function showStep(n){
+    state.step=n;
+    steps.forEach(function(s){s.classList.remove('active','show')});
+    var el=document.querySelector('.step[data-step="'+n+'"]');
+    el.classList.add('active');
+    void el.offsetWidth;
+    requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('show')})});
+    [].forEach.call(prog.children,function(p){
+      var i=+p.dataset.i;
+      p.classList.toggle('cur',i===n);
+      p.classList.toggle('done',i<n);
+    });
+    if(n===4)renderResult();
+    if(n===6)renderConfirm();
+    window.scrollTo(0,0);
+  }
+
+  // helpers
+  function perMin(v){return (Number(v||0)/60).toFixed(1).replace('.',',');}
+  function evaluate(){
+    var p=state.pack,v=Number(state.volume)||0;
+    if((p==='small'||p==='mid')&&v>0&&v<240)return 'low';
+    if(p==='small'){ if(v>=240&&v<=516)return 'ok'; if(v>=517)return 'high'; }
+    if(p==='mid'){ if(v>=240&&v<=444)return 'ok'; if(v>=445)return 'high'; }
+    return 'custom';
+  }
+  var PER_PALLET={small:100,mid:44};
+  function palletEst(){
+    var per=PER_PALLET[state.pack],v=Number(state.volume)||0;
+    if(!per||!(v>0))return null;
+    var ph=v/per;
+    return {per:per,ph:ph.toFixed(1).replace('.',','),min:(60/ph).toFixed(1).replace('.',',')};
+  }
+  function setErr(id,on){var e=$(id);if(e)e.classList.toggle('on',!!on);}
+
+  // step 1
+  function paintPack(){
+    [].forEach.call(document.querySelectorAll('#cards .pk'),function(b){b.classList.toggle('sel',b.dataset.v===state.pack)});
+  }
+  $('cards').addEventListener('click',function(e){
+    var b=e.target.closest('.pk');if(!b)return;
+    state.pack=b.dataset.v;paintPack();setErr('errPack',false);$('pkWrap').classList.remove('bad');
+  });
+
+  // step 2
+  function clampVol(x){
+    var n=Math.round(Number(x));
+    if(!isFinite(n)||n<0)return 0;
+    return n>1000?1000:n;
+  }
+  function paintVol(skipNum){
+    var v=clampVol(state.volume);state.volume=v;
+    $('vol').value=v; // slider (step 10) se aliniază vizual; valoarea exactă rămâne în state
+    if(!skipNum)$('volNum').value=v;
+    $('volOut').textContent=v+' unități/oră = '+perMin(v)+' unități/min';
+  }
+  function volChanged(){
+    if(state.volume>0){setErr('errVol',false);$('volBox').classList.remove('bad');}
+  }
+  $('vol').addEventListener('input',function(){
+    state.volume=clampVol(this.value);paintVol();volChanged();
+  });
+  $('volNum').addEventListener('input',function(){
+    var raw=this.value,v=clampVol(raw);
+    state.volume=v;
+    var needRewrite=(raw!==''&&Number(raw)!==v&&(Number(raw)>1000||Number(raw)<0));
+    paintVol(!needRewrite);volChanged();
+  });
+  $('volNum').addEventListener('blur',function(){this.value=clampVol(this.value);});
+
+  // step 3
+  function paintShift(){
+    [].forEach.call(document.querySelectorAll('#tog .tg'),function(b){b.classList.toggle('sel',Number(b.dataset.v)===state.shifts)});
+  }
+  $('tog').addEventListener('click',function(e){
+    var b=e.target.closest('.tg');if(!b)return;
+    state.shifts=Number(b.dataset.v);paintShift();setErr('errShift',false);
+    [].forEach.call(document.querySelectorAll('#tog .tg'),function(x){x.classList.remove('bad')});
+  });
+  $('region').addEventListener('change',function(){
+    state.region=this.value;
+    if(this.value){setErr('errRegion',false);this.classList.remove('bad');}
+  });
+
+  // validation per step
+  function validate(n){
+    var ok=true;
+    if(n===1){
+      if(!state.pack){ok=false;setErr('errPack',true);$('pkWrap').classList.add('bad');}
+    }
+    if(n===2){
+      if(!(state.volume>0)){ok=false;setErr('errVol',true);$('volBox').classList.add('bad');}
+    }
+    if(n===3){
+      if(!state.shifts){ok=false;setErr('errShift',true);[].forEach.call(document.querySelectorAll('#tog .tg'),function(x){x.classList.add('bad')});}
+      if(!state.region){ok=false;setErr('errRegion',true);$('region').classList.add('bad');}
+    }
+    return ok;
+  }
+  function goNext(){
+    var n=state.step;
+    if(n>=1&&n<=3&&!validate(n))return;
+    showStep(n+1);
+  }
+  [].forEach.call(document.querySelectorAll('[data-next]'),function(b){b.addEventListener('click',goNext)});
+  [].forEach.call(document.querySelectorAll('[data-back]'),function(b){b.addEventListener('click',function(){showStep(Math.max(0,state.step-1))})});
+  $('start').addEventListener('click',function(){showStep(1)});
+
+  // step 4
+  function renderResult(){
+    var r=RESULT[evaluate()];
+    var b=$('badge');b.className='badge '+r.cls;b.textContent=r.icon+' '+r.title;
+    $('resText').textContent=r.text;
+    var sh=state.shifts;
+    $('shiftText').textContent=(sh===2||sh===3)
+      ?'Regimul de lucru ('+sh+' schimburi/zi) corespunde profilului PURATOS, unde reducerea ridicării manuale repetitive are impact ridicat.'
+      :(sh===1?'Pentru 1 schimb/zi, recomandăm verificarea gradului de utilizare zilnică în analiza tehnică.':'');
+    var pe=palletEst(),pb=$('palBlock');
+    if(pe){
+      pb.style.display='block';
+      pb.innerHTML='<b>Ritm estimat de schimb manual al paleților:</b> ~'+pe.ph+' paleți/oră (~'+pe.min+' min/palet)<br><span style="font-size:12px;color:#9ca3af">Estimare orientativă pe baza configurației PURATOS (europaleți): '+pe.per+' găleți/palet.</span>';
+    }else{pb.style.display='none';pb.textContent='';}
+  }
+
+  // step 5 form
+  var FIELDS=[['name','fName','eName'],['role','fRole','eRole'],['company','fCompany','eCompany'],['email','fEmail','eEmail'],['city','fCity','eCity']];
+  var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  function readForm(){FIELDS.forEach(function(f){state.form[f[0]]=($(f[1]).value||'').trim();});}
+  function writeForm(){FIELDS.forEach(function(f){$(f[1]).value=state.form[f[0]]||'';});}
+  function clearFormErrors(){FIELDS.forEach(function(f){$(f[1]).classList.remove('bad');setErr(f[2],false);});}
+  function validateForm(){
+    readForm();var ok=true;
+    FIELDS.forEach(function(f){
+      var v=state.form[f[0]];
+      var bad=!v||(f[0]==='email'&&!EMAIL_RE.test(v));
+      $(f[1]).classList.toggle('bad',bad);setErr(f[2],bad);
+      if(bad)ok=false;
+    });
+    return ok;
+  }
+  FIELDS.forEach(function(f){
+    var ev=$(f[1]).tagName==='SELECT'?'change':'input';
+    $(f[1]).addEventListener(ev,function(){
+      if(this.classList.contains('bad')){
+        var v=(this.value||'').trim();
+        if(v&&(f[0]!=='email'||EMAIL_RE.test(v))){this.classList.remove('bad');setErr(f[2],false);}
+      }
+    });
+  });
+  $('form').addEventListener('submit',function(e){
+    e.preventDefault();
+    if(validateForm())showStep(6);
+  });
+  $('fill').addEventListener('click',function(){
+    state.form={name:'Andrei Popescu Demo',role:'Director Producție',company:'LactoDemo SRL',email:'demo@lactodemo.ro',city:'Timișoara'};
+    writeForm();clearFormErrors();
+  });
+
+  // step 6
+  function safe(v,fb){return (v===undefined||v===null||v===''||v!==v)?fb:v;}
+  function summaryData(){
+    var f=state.form||{};
+    var vol=Number(state.volume)||0;
+    var reg=REGION[state.region];
+    var res=RESULT[evaluate()];
+    var company=safe(f.company,'—'),name=safe(f.name,'—'),role=safe(f.role,'—');
+    return [
+      ['Companie & Contact',company+' — '+name+' ('+role+')'],
+      ['Tip ambalaj',safe(PACK[state.pack],'—')],
+      ['Volum',vol+' unități/oră ('+perMin(vol)+'/min)'],
+      ['Schimburi',(state.shifts?state.shifts:'—')+'/zi'],
+      ['Estimare schimb paleți',(function(){var pe=palletEst();return pe?'~'+pe.ph+' paleți/oră (~'+pe.min+' min/palet) — estimare orientativă pe baza configurației PURATOS (europaleți)':'—';})()],
+      ['Hub alocat',reg?reg.hub:'—'],
+      ['Rezultat evaluare',res.short,res.cls]
+    ];
+  }
+  function renderConfirm(){
+    var reg=REGION[state.region];
+    $('hubText').textContent='Echipa Tech-Con din hub-ul '+(reg?reg.hub:'cel mai apropiat')+' vă va contacta în 48 de ore.';
+    var box=$('sum');box.innerHTML='';
+    summaryData().forEach(function(r){
+      var d=document.createElement('div');
+      var b=document.createElement('b');b.textContent=r[0];
+      d.appendChild(b);
+      if(r[2]){var sb=document.createElement('span');sb.className='sbadge '+r[2];sb.textContent=r[1];d.appendChild(sb);}
+      else d.appendChild(document.createTextNode(r[1]));
+      box.appendChild(d);
+    });
+  }
+  function summaryText(){
+    return 'PaletBot by Tech-Con — Fișă tehnică\n'+summaryData().map(function(r){return r[0]+': '+r[1]}).join('\n');
+  }
+  function fallbackCopy(t){
+    var ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta);
+  }
+  $('copy').addEventListener('click',function(){
+    var btn=this,t=summaryText();
+    function done(){
+      btn.textContent='✓ Copiat!';
+      clearTimeout(timer);
+      timer=setTimeout(function(){btn.textContent='📋 Copiază rezumatul';},2000);
+    }
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(done,function(){fallbackCopy(t);done();});
+      }else{fallbackCopy(t);done();}
+    }catch(e){fallbackCopy(t);done();}
+  });
+
+  // reset
+  function resetAll(){
+    state=fresh();
+    paintPack();paintVol();paintShift();
+    $('region').value='';$('region').classList.remove('bad');
+    writeForm();clearFormErrors();
+    ['errPack','errVol','errShift','errRegion'].forEach(function(i){setErr(i,false)});
+    $('pkWrap').classList.remove('bad');$('volBox').classList.remove('bad');
+    [].forEach.call(document.querySelectorAll('#tog .tg'),function(x){x.classList.remove('bad')});
+    clearTimeout(timer);$('copy').textContent='📋 Copiază rezumatul';
+    $('sum').innerHTML='';$('hubText').textContent='';$('badge').textContent='';$('resText').textContent='';
+    showStep(0);
+  }
+  $('reset').addEventListener('click',resetAll);
+
+  // demos
+  function setBase(region){
+    state.pack='mid';state.volume=420;state.shifts=2;state.region=region;
+    $('region').value=region;
+    ['pkWrap','volBox','region'].forEach(function(i){$(i).classList.remove('bad')});
+    [].forEach.call(document.querySelectorAll('#tog .tg'),function(x){x.classList.remove('bad')});
+    paintPack();paintVol();paintShift();
+    ['errPack','errVol','errShift','errRegion'].forEach(function(i){setErr(i,false)});
+  }
+  $('demoOk').addEventListener('click',function(){
+    setBase('west');showStep(4);
+  });
+  $('demoErr').addEventListener('click',function(){
+    setBase('south');
+    state.form={name:'',role:'',company:'',email:'',city:''};
+    writeForm();clearFormErrors();
+    showStep(5);
+    validateForm();
+  });
+
+  paintVol();
+  showStep(0);
+})();
+</script>
+</body>
+</html>
